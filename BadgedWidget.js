@@ -93,10 +93,10 @@ const BadgedWidget = Trait.compose({
       'data:text/html,<html><body style="margin:0; padding:0;">' +
       '<div style="position: relative;">' +
       '<img src="' + imageURL + '">' +
-      '<span style="font-size: 0.6em; position: absolute; bottom: 0; right: 0; padding: 0; margin: 0;">' +
+      '<span style="font-size: 0.6em; font-weight: bold; position: absolute; bottom: 0; right: 0; padding: 0; margin: 0;">' +
       (badge.text || '') + '</span>' +
       '<span style="font-size: 0.6em; background-color: ' + (badge.color || '') + ';' +
-      'position: absolute; bottom: 0; right: 0; opacity: ' + (badge.opacity || '') + '; padding: 0; margin: 0;">' +
+      'position: absolute; bottom: 0; right: 0; opacity: ' + (badge.opacity || '') + '; padding: 0; margin: 0; -moz-border-radius: 0.3em;">' +
       (badge.text || '') + '</span>' +
       '</div>' +
       '</body></html>';
