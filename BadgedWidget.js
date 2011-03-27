@@ -57,7 +57,7 @@ var widget = badges.BadgedWidget({
 widget.badge = {
   text: '13',
   color: 'white',
-  opacity: "0.5"
+  opacity: '0.5'
 };
 </snippet>
 

@@ -1,5 +1,19 @@
 console.log("MAIN");
 
+const badges = require("BadgedWidget");
+
+var widget = badges.BadgedWidget({
+  id: "mozilla-link",
+  label: "Mozilla Link",
+  contentURL: "http://www.mozilla.org/favicon.ico"
+});
+
+widget.badge = {
+  text: '13',
+  color: 'white',
+  opacity: "0.5"
+};
+
 /*
 require("observer-service").add("sessionstore-windows-restored", function(aSubject, aData) {
   require("notifications").notify("session yah!");
