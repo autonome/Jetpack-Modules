@@ -1,18 +1,111 @@
 console.log("MAIN");
 
-const badges = require("BadgedWidget");
+/*
+// Translation
+let selection = require("selection");
+let contextMenu = require("context-menu");
 
-var widget = badges.BadgedWidget({
-  id: "mozilla-link",
-  label: "Mozilla Link",
-  contentURL: "http://www.mozilla.org/favicon.ico"
+contextMenu.Item({
+  label: "Translate Selection...",
+  context: contextMenu.SelectionContext(),
+  contentScript: 'on("click", postMessage);',
+  onMessage: function (node, data) {
+    require("request").Request({
+      url: "http://ajax.googleapis.com/ajax/services/language/translate",
+      content: {
+        v: "1.0",
+        q: selection.text,
+        langpair: "|sw"
+      },  
+      headers: {
+        Referer: require("tabs").activeTab.location
+      },  
+      onComplete: function() {
+        selection.text = this.response.json.responseData.translatedText;
+      }   
+    }).get();
+  }
 });
+*/
 
-widget.badge = {
-  text: '13',
-  color: 'white',
-  opacity: "0.5"
-};
+/*
+ <div class="stream-item-content tweet stream-tweet " data-user-id="40916412" data-screen-name="sarahkkhan" data-retweet-id="58865782553198593" data-item-id="58856704217067520" data-tweet-id="58856704217067520">
+ <div class="tweet-dogear "></div>
+ <div class="tweet-image">
+ <div class="tweet-content">
+ <div class="tweet-row">
+ <div class="tweet-row">
+ <div class="tweet-row">
+ </div>
+*/
+
+/*
+// twitter widgets
+var tabs = require("tabs");
+var widget = require("widget");
+var pageWorkers = require("page-worker");
+pageWorkers.Page({
+  contentURL: "https://www.twitter.com/",
+  contentScript: "console.log('fooble'); " +
+    "var items = document.querySelectorAll('div.tweet');" +
+    "for (var i = 0; i < items.length; i++) {" +
+      "console.log(items[i].tagName); " +
+      "//postMessage(items[i].childNodes[1].src); }",
+  contentScriptWhen: "ready",
+  onMessage: function(imageURL) {
+    console.log(imgURL);
+    widget.Widget({
+      label: "Latest Friends",
+      contentURL: imageURL,
+      onClick: function() tabs.active.location = "http://www.facebook.com"
+    });
+  }
+});
+*/
+
+/*
+// facebook removal machine
+// Remove script: <script type="text/javascript" src="http://connect.facebook.net/
+// Remove box: <fb:like href="http://www.facebook.com/AirAsiaThailand" show_faces="true" width="233" font="arial"></fb:like>
+const pm = require('page-mod');
+pm.PageMod({
+  include: '*',
+  //contentScriptWhen: 'ready',
+  contentScript: 'console.log("running mod");  (' + function() {
+    var nodes = document.querySelectorAll("script[src]"); 
+    for (var i = 0; i < nodes.length; i++) { 
+      var node = nodes[i]; 
+      var src = node.getAttribute("src"); 
+      console.log("src: " + src); 
+      if (src && src.indexOf("connect.facebook") != -1) { 
+        console.log("fb scrpt"); 
+        node.parentNode.removeChild(node); 
+      } 
+      else if (src && src.indexOf("google-analytics") != -1) { 
+        console.log("ga scrpt"); 
+        node.parentNode.removeChild(node); 
+      } 
+      else if (src && src.indexOf("doubleclick") != -1) { 
+        console.log("db scrpt"); 
+        node.parentNode.removeChild(node); 
+      } 
+    } 
+
+    var elnode = document.querySelector("*|like");
+    if (elnode) { console.log("hit facebook like element"); elnode.parentNode.removeChild(elnode); }
+  } + ')();'
+});
+*/
+
+/*
+// awesomebar extender
+require('awesomebar').add({
+  keyword: 'foo',
+  handler: function(search) {
+    
+  }
+});
+*/
 
 /*
 require("observer-service").add("sessionstore-windows-restored", function(aSubject, aData) {

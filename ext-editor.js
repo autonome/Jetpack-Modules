@@ -112,8 +112,12 @@ Editor.prototype = {
                        .createInstance(Ci.nsIProcess));
         process.init(executable);
         let args = [];
-        if (isOSX) args.push("-a", editor, file.path);
-        else args[0] = file.path;
+        if (isOSX) {
+          args.push("-a", this.editorPath, file.path);
+        }
+        else {
+          args[0] = file.path;
+        }
         let ret = process.run(false, args, args.length);
       } catch (e) {
         Cu.reportError(e);
