@@ -1,5 +1,229 @@
 console.log("MAIN");
 
+const {Cc, Ci, Cu, Cm} = require('chrome');
+
+// awesomebar extender
+require('awesomebar').add({
+  keyword: 'translate',
+  onSearch: function(query, suggest) {
+    let lang = query.substring(0, query.indexOf(' '));
+    let text = query.substring(query.indexOf(' '));
+    if (lang.length == 2 && text.length > 2) {
+      translate(lang, text, function(translatedText) {
+        suggest({
+          title: 'Translated text in ' + lang + ': ' + translatedText,
+          url: 'http://translate.google.com/?tl=' + lang +
+               '&q=' + encodeURIComponent(text),
+        }, true);
+      });
+    }
+  }
+});
+
+function translate(lang, text, callback) {
+  require('request').Request({
+    url: 'http://ajax.googleapis.com/ajax/services/language/translate',
+    content: {
+      v: '1.0',
+      q: text,
+      langpair: '|' + lang
+    },  
+    headers: {
+      Referer: require('tabs').activeTab.location
+    },
+    onComplete: function() {
+      if (this.response.json.responseData &&
+          this.response.json.responseData.translatedText)
+        callback(this.response.json.responseData.translatedText);
+    }
+  }).get();
+}
+
+/*
+// about:home fancification
+const {PageMod} = require('page-mod');
+const {data} = require('self');
+
+let mod = PageMod({
+  include: 'about:home',
+  contentScriptWhen: 'ready',
+  contentScriptFile: [data.url('jquery.min.js'), data.url('abouthome.js')]
+});
+
+let appTabs = [];
+for each (var tab in require('tabs')) {
+  if (tab.isPinned)
+    appTabs.push([tab.title, tab.url, tab.favicon]);
+}
+*/
+
+/*
+// Chrome-style private browsing
+TODO:
+- create profile
+- turn of default browser check and whatever other stuff
+- delete profile after use
+*/
+/*
+var tmpDir = Cc["@mozilla.org/file/directory_service;1"].
+             getService(Ci.nsIProperties).
+             get("TmpD", Ci.nsIFile).path;
+
+function run(args) {
+  var args = args || []; 
+  var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;  
+  var ds = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
+  var binDir = ds.get("XCurProcD", Ci.nsIFile);
+  
+  var binFile = binDir.clone();
+  if (os == "WINNT")
+    binFile.append("firefox.exe");
+  else
+    binFile.append("firefox-bin");
+
+  if (!binFile.exists())
+    Cu.reportError("Unable to find the executable!");
+
+  var process = Cc["@mozilla.org/process/util;1"].
+                createInstance(Ci.nsIProcess);
+  process.init(binFile);
+  process.run(false, args, args.length);
+}
+
+run(['-profile', tmpDir + '/p' + Date.now(), '-private']);
+
+user_pref("browser.shell.checkDefaultBrowser", false);
+*/
+
+/*
+attention span
+
+- chord diagram of tab switching
+- median/average time active on any given tab
+- median/average idle time generally
+- bar graph of idle over hours
+- bar graph of tab switch volume over hours
+(function() {
+*/
+/*
+function getURL(name) require('self').data.url(name)
+let handler = require("protocol").Handler({
+  onRequest: function(request, response) {
+    console.log('onrequ');
+    response.content = require('self').data.load('chord.html');
+    response.contentType = 'text/html';
+    var worker = require('tabs').activeTab.attach({
+      contentScriptFile: [
+        getURL('d3/d3.js'),
+        getURL('d3/d3.layout.js'),
+        getURL('chord.js')
+      ]
+    });
+    console.log('attached');
+  }
+});
+handler.listen({ about: "attention" });
+console.log('done');
+})();
+*/
+
+
+/*
+function getURL(name) require('self').data.url(name)
+
+// wikipedia browser panel
+let panel = require("panel").Panel({
+  height: 500,
+  width: 800,
+  contentURL: getURL("wikipedia.html"),
+  contentScriptWhen: 'ready',
+  contentScriptFile: [
+    getURL('d3/d3.js'),
+    getURL('d3/d3.layout.js'),
+    getURL('wikipedia.js')]
+});
+
+panel.port.on('getLinkData', function(url) {
+  fetchWikipediaData(url, function(linkData) {
+    panel.port.emit('linkData', linkData);
+  });
+});
+
+panel.port.on('getImageURL', function(url) {
+  fetchWikipediaImage(url, function(imageURL) {
+    panel.port.emit('imageURL', {
+      url: url,
+      imageURL: imageURL
+    });
+  });
+});
+
+panel.port.on('nagivateTo', function(url) {
+  require('tabs').activeTab.url = url;
+});
+
+// if a wikipedia page is loaded, update the panel
+require('tabs').on('ready', function(tab) {
+  if (tab.url.indexOf('.wikipedia.org') != -1) {
+    fetchWikipediaData(tab.url, function(linkData) {
+      panel.port.emit('linkData', linkData);
+    });
+  }
+});
+
+// keyboard shortcut to load panel
+require('hotkeys').Hotkey({
+  combo: 'accel-shift-y',
+  // TODO: toggle
+  onPress: function() panel.show()
+});
+
+// given a url, catalog the link data, pass to callback
+function fetchWikipediaData(url, callback) {
+  require('page-worker').Page({
+    contentURL: url,
+    contentScriptFile: getURL('wikipedia-processor.js'),
+    contentScriptWhen: 'ready',
+    onMessage: callback
+  });
+}
+
+// given a url, pick out the main image, pass to callback
+let imageFetcher = {
+  queue: [],
+  timer: null,
+  interval: 500,
+  start: function() {
+    if (this.timer) return; // already running
+    this.timer = require('timer').setInterval(this.processJob.bind(this), this.interval);
+  },
+  add: function(callback) {
+    this.queue.push(callback);
+    if (!this.timer)
+      this.start();
+  },
+  processJob: function() {
+    if (this.queue.length)
+      this.queue.shift()();
+    else {
+      this.timer.clearInterval();
+      this.timer = null;
+    }
+  }
+};
+
+function fetchWikipediaImage(url, callback) {
+  imageFetcher.add(function() {
+    require('page-worker').Page({
+      contentURL: url,
+      contentScriptFile: getURL('wikipedia-image.js'),
+      contentScriptWhen: 'ready',
+      onMessage: callback
+    });
+  });
+}
+*/
+
 /*
 // Translation
 let selection = require("selection");
@@ -28,6 +252,7 @@ contextMenu.Item({
 });
 */
 
+// twitter widgets
 /*
  <div class="stream-item-content tweet stream-tweet " data-user-id="40916412" data-screen-name="sarahkkhan" data-retweet-id="58865782553198593" data-item-id="58856704217067520" data-tweet-id="58856704217067520">
  <div class="tweet-dogear "></div>
@@ -40,7 +265,6 @@ contextMenu.Item({
 */
 
 /*
-// twitter widgets
 var tabs = require("tabs");
 var widget = require("widget");
 var pageWorkers = require("page-worker");
@@ -94,16 +318,6 @@ pm.PageMod({
     var elnode = document.querySelector("*|like");
     if (elnode) { console.log("hit facebook like element"); elnode.parentNode.removeChild(elnode); }
   } + ')();'
-});
-*/
-
-/*
-// awesomebar extender
-require('awesomebar').add({
-  keyword: 'foo',
-  handler: function(search) {
-    
-  }
 });
 */
 
