@@ -111,7 +111,7 @@ function addAddressBarSearch(window) {
     if (skipCheck())
       return;
 
-    let icon = "";
+    let icon = '';
     let handler = getMatchingHandler(urlbar.value);
     if (handler && handler.icon)
       icon = handler.icon;
@@ -129,13 +129,6 @@ function addAddressBarSearch(window) {
 
     // Check the input on various events
     listen(window, BrowserUI._edit, "input", onLocationBarInput);
-
-    // Convert inputs to twitter urls
-    change(window.Browser, "getShortcutOrURI", function(orig) {
-      return function(uri, data) {
-        return orig.call(this, uri, data);
-      };
-    });
   }
   // desktop
   else {
@@ -147,33 +140,31 @@ function addAddressBarSearch(window) {
     // Check the input on various events
     listen(window, gURLBar, "input", onLocationBarInput);
     listen(window, gBrowser.tabContainer, "TabSelect", onLocationBarInput);
-
-    // Convert inputs to twitter urls
-    change(gURLBar, "_canonizeURL", function(orig) {
-      return function(event) {
-        return orig.call(this, event);
-      };
-    });
   }
 
   // Provide a way to set the autocomplete search engines and initialize
   function setSearch(engines) {
-    urlbar.setAttribute("autocompletesearch", engines);
+    urlbar.setAttribute('autocompletesearch', engines);
     urlbar.mSearchNames = null;
     urlbar.initSearchNames();
   };
 
   // Add in the twitter search and remove on cleanup
-  let origSearch = urlbar.getAttribute("autocompletesearch");
-  setSearch(require('self').id + " " + origSearch);
+  let origSearch = urlbar.getAttribute('autocompletesearch');
+  setSearch(require('self').id + ' ' + origSearch);
   unload(function() setSearch(origSearch));
 }
 
 // Add an autocomplete search engine to provide location bar suggestions
 function addAutocomplete() {
   const contract = "@mozilla.org/autocomplete/search;1?name=" + require('self').id;
-  const desc = "Jetpack Autocomplete";
+  const desc = "SDK Awesomebar API for Add-on SDK";
   const uuid = components.ID("504A8466-8D3D-11E0-A57E-D2F94824019B");
+  /*
+  const controller = Cc["@mozilla.org/autocomplete/controller;1"].
+                     getService(Ci.nsIAutoCompleteController);
+                     */
+
 
   // Keep a timer to send a delayed no match
   let timer;
@@ -202,6 +193,7 @@ function addAutocomplete() {
 
     // Handle searches from the location bar
     startSearch: function(query, param, previous, listener) {
+      console.log('startSearch');
 
       // Always clear the timer on a new search
       clearTimer();
@@ -241,6 +233,7 @@ function addAutocomplete() {
 
     // Nothing to cancel other than a delayed search as results are synchronous
     stopSearch: function() {
+      console.log('stopSearch()');
       clearTimer();
     },
   };

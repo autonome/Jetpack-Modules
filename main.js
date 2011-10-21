@@ -1,43 +1,58 @@
-console.log("MAIN");
+console.log('MAIN');
 
-const {Cc, Ci, Cu, Cm} = require('chrome');
+//const {Cc, Ci, Cu, Cm} = require('chrome');
 
-// awesomebar extender
-require('awesomebar').add({
-  keyword: 'translate',
-  onSearch: function(query, suggest) {
-    let lang = query.substring(0, query.indexOf(' '));
-    let text = query.substring(query.indexOf(' '));
-    if (lang.length == 2 && text.length > 2) {
-      translate(lang, text, function(translatedText) {
-        suggest({
-          title: 'Translated text in ' + lang + ': ' + translatedText,
-          url: 'http://translate.google.com/?tl=' + lang +
-               '&q=' + encodeURIComponent(text),
-        }, true);
-      });
-    }
-  }
+require('reflector.js');
+//require('wikipedia.js');
+//require('memorytree.js');
+//require('taskpaper.js');
+
+//require('json-test.js');
+
+require('widget').Widget({
+  id: 'fooble',
+  label: 'asdf',
+  contentURL: 'data:text/html,asdf'
 });
 
-function translate(lang, text, callback) {
-  require('request').Request({
-    url: 'http://ajax.googleapis.com/ajax/services/language/translate',
-    content: {
-      v: '1.0',
-      q: text,
-      langpair: '|' + lang
-    },  
-    headers: {
-      Referer: require('tabs').activeTab.location
-    },
-    onComplete: function() {
-      if (this.response.json.responseData &&
-          this.response.json.responseData.translatedText)
-        callback(this.response.json.responseData.translatedText);
-    }
-  }).get();
-}
+/*
+// awesomebar extender: bugzilla search
+const iconURL = require('self').data.url('bugzilla.png');
+require('awesomebar').add({
+  icon: iconURL,
+  keyword: 'bz',
+  onSearch: function(query, suggest) {
+    if (query.length < 3)
+      return;
+    require('bz').createClient().searchBugs(
+      {
+        quicksearch: query.trim()
+      },
+      function(error, bugs) {
+        console.log('results', error, bugs);
+        if (error) {
+            suggest({
+              title: 'Bugzilla quicksearch error: ' + error + '. Click for quicksearch docs.',
+              icon: iconURL,
+              url: 'https://bugzilla.mozilla.org/page.cgi?id=quicksearch.html'
+            }, true);
+        }
+        else {
+          for (var i = 0; i < bugs.length; i++) {
+            let bug = bugs[i];
+            suggest({
+              title: "Bug " + bug.id + ' - ' + bug.status + ":" +
+                     bug.resolution + " - " + bug.summary,
+              icon: iconURL,
+              url: 'https://bugzilla.mozilla.org/show_bug.cgi?id=' + bug.id,
+            }, (i == bugs.length - 1));
+          }
+        }
+      }
+    );
+  }
+});
+*/
 
 /*
 // about:home fancification
@@ -62,7 +77,7 @@ for each (var tab in require('tabs')) {
 TODO:
 - create profile
 - turn of default browser check and whatever other stuff
-- delete profile after use
+- no need to delete profile after use, because was private!!
 */
 /*
 var tmpDir = Cc["@mozilla.org/file/directory_service;1"].
@@ -128,101 +143,6 @@ console.log('done');
 */
 
 
-/*
-function getURL(name) require('self').data.url(name)
-
-// wikipedia browser panel
-let panel = require("panel").Panel({
-  height: 500,
-  width: 800,
-  contentURL: getURL("wikipedia.html"),
-  contentScriptWhen: 'ready',
-  contentScriptFile: [
-    getURL('d3/d3.js'),
-    getURL('d3/d3.layout.js'),
-    getURL('wikipedia.js')]
-});
-
-panel.port.on('getLinkData', function(url) {
-  fetchWikipediaData(url, function(linkData) {
-    panel.port.emit('linkData', linkData);
-  });
-});
-
-panel.port.on('getImageURL', function(url) {
-  fetchWikipediaImage(url, function(imageURL) {
-    panel.port.emit('imageURL', {
-      url: url,
-      imageURL: imageURL
-    });
-  });
-});
-
-panel.port.on('nagivateTo', function(url) {
-  require('tabs').activeTab.url = url;
-});
-
-// if a wikipedia page is loaded, update the panel
-require('tabs').on('ready', function(tab) {
-  if (tab.url.indexOf('.wikipedia.org') != -1) {
-    fetchWikipediaData(tab.url, function(linkData) {
-      panel.port.emit('linkData', linkData);
-    });
-  }
-});
-
-// keyboard shortcut to load panel
-require('hotkeys').Hotkey({
-  combo: 'accel-shift-y',
-  // TODO: toggle
-  onPress: function() panel.show()
-});
-
-// given a url, catalog the link data, pass to callback
-function fetchWikipediaData(url, callback) {
-  require('page-worker').Page({
-    contentURL: url,
-    contentScriptFile: getURL('wikipedia-processor.js'),
-    contentScriptWhen: 'ready',
-    onMessage: callback
-  });
-}
-
-// given a url, pick out the main image, pass to callback
-let imageFetcher = {
-  queue: [],
-  timer: null,
-  interval: 500,
-  start: function() {
-    if (this.timer) return; // already running
-    this.timer = require('timer').setInterval(this.processJob.bind(this), this.interval);
-  },
-  add: function(callback) {
-    this.queue.push(callback);
-    if (!this.timer)
-      this.start();
-  },
-  processJob: function() {
-    if (this.queue.length)
-      this.queue.shift()();
-    else {
-      this.timer.clearInterval();
-      this.timer = null;
-    }
-  }
-};
-
-function fetchWikipediaImage(url, callback) {
-  imageFetcher.add(function() {
-    require('page-worker').Page({
-      contentURL: url,
-      contentScriptFile: getURL('wikipedia-image.js'),
-      contentScriptWhen: 'ready',
-      onMessage: callback
-    });
-  });
-}
-*/
 
 /*
 // Translation
@@ -287,39 +207,13 @@ pageWorkers.Page({
 });
 */
 
-/*
-// facebook removal machine
-// Remove script: <script type="text/javascript" src="http://connect.facebook.net/
-// Remove box: <fb:like href="http://www.facebook.com/AirAsiaThailand" show_faces="true" width="233" font="arial"></fb:like>
+// Wallflower
 const pm = require('page-mod');
 pm.PageMod({
   include: '*',
-  //contentScriptWhen: 'ready',
-  contentScript: 'console.log("running mod");  (' + function() {
-    var nodes = document.querySelectorAll("script[src]"); 
-    for (var i = 0; i < nodes.length; i++) { 
-      var node = nodes[i]; 
-      var src = node.getAttribute("src"); 
-      console.log("src: " + src); 
-      if (src && src.indexOf("connect.facebook") != -1) { 
-        console.log("fb scrpt"); 
-        node.parentNode.removeChild(node); 
-      } 
-      else if (src && src.indexOf("google-analytics") != -1) { 
-        console.log("ga scrpt"); 
-        node.parentNode.removeChild(node); 
-      } 
-      else if (src && src.indexOf("doubleclick") != -1) { 
-        console.log("db scrpt"); 
-        node.parentNode.removeChild(node); 
-      } 
-    } 
-
-    var elnode = document.querySelector("*|like");
-    if (elnode) { console.log("hit facebook like element"); elnode.parentNode.removeChild(elnode); }
-  } + ')();'
+  contentScriptWhen: 'start',
+  contentScriptFile: require('self').data.url('wallflower.js')
 });
-*/
 
 /*
 require("observer-service").add("sessionstore-windows-restored", function(aSubject, aData) {
