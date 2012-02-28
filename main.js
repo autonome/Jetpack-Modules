@@ -2,18 +2,24 @@ console.log('MAIN');
 
 //const {Cc, Ci, Cu, Cm} = require('chrome');
 
-require('reflector.js');
+//require('portal');
+//require('stylemod');
+//require('reflector.js');
 //require('wikipedia.js');
 //require('memorytree.js');
 //require('taskpaper.js');
 
 //require('json-test.js');
 
-require('widget').Widget({
-  id: 'fooble',
-  label: 'asdf',
-  contentURL: 'data:text/html,asdf'
-});
+//require('mint.js');
+//require('skew.js');
+
+//require('sopa.js');
+
+//require('zeitgeist');
+
+require('mediastorage.js');
+require('tabs').open(require('self').data.url('test_mediastorage.html'));
 
 /*
 // awesomebar extender: bugzilla search
